@@ -2,7 +2,7 @@ export type TipoGrupo = 'entrada' | 'despesa'
 
 export interface Grupo {
   id: string
-  user_id: string
+  workspace_id: string
   nome: string
   ordem: number
   ativo: boolean
@@ -13,7 +13,7 @@ export interface Grupo {
 
 export interface Item {
   id: string
-  user_id: string
+  workspace_id: string
   nome: string
   cnpj: string | null
   ativo: boolean
@@ -21,14 +21,14 @@ export interface Item {
 
 export interface Descricao {
   id: string
-  user_id: string
+  workspace_id: string
   descricao: string
   ativo: boolean
 }
 
 export interface Malote {
   id: string
-  user_id: string
+  workspace_id: string
   descricao: string
   data: string
   grupo_id: string
@@ -37,7 +37,7 @@ export interface Malote {
 
 export interface Lancamento {
   id: string
-  user_id: string
+  workspace_id: string
   numero: number
   data: string
   competencia?: string
@@ -54,6 +54,7 @@ export type FormatoData = 'DD/MM/AAAA' | 'MM/DD/AAAA' | 'AAAA-MM-DD'
 
 export interface Configuracoes {
   user_id: string
+  workspace_id: string
   nome_projeto: string
   moeda: string
   formato_data: FormatoData
@@ -61,4 +62,4 @@ export interface Configuracoes {
   ocultar_data_emissao: boolean
 }
 
-export type Role = 'admin' | 'editor' | 'leitor'
+export type Role = 'owner' | 'admin' | 'editor' | 'leitor'

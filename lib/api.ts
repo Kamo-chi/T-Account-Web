@@ -1,20 +1,24 @@
 import { supabase } from './supabaseClient'
 import { Grupo, Item, Descricao, Lancamento, Malote, Configuracoes, Role } from './types'
 
-async function currentUserId() {
-  const { data } = await supabase.auth.getUser()
-  return data.user?.id
-}
+// workspaceId deve vir do WorkspaceContext (useWorkspace().workspaceAtivo.id)
 
 // Grupos
-export async function getGrupos() {
-  const { data, error } = await supabase.from('grupos').select('*').order('ordem')
+export async function getGrupos(workspaceId: string) {
+  const { data, error } = await supabase
+    .from('grupos')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('ordem')
   if (error) throw error
   return data as Grupo[]
 }
-export async function createGrupo(input: Omit<Grupo, 'id' | 'user_id'>) {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('grupos').insert({ ...input, user_id }).select().single()
+export async function createGrupo(workspaceId: string, input: Omit<Grupo, 'id' | 'workspace_id'>) {
+  const { data, error } = await supabase
+    .from('grupos')
+    .insert({ ...input, workspace_id: workspaceId })
+    .select()
+    .single()
   if (error) throw error
   return data as Grupo
 }
@@ -29,53 +33,87 @@ export async function deleteGrupo(id: string) {
 }
 
 // Itens (fornecedores)
-export async function getItens() {
-  const { data, error } = await supabase.from('itens').select('*').order('nome')
+export async function getItens(workspaceId: string) {
+  const { data, error } = await supabase
+    .from('itens')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('nome')
   if (error) throw error
   return data as Item[]
 }
-export async function createItem(input: Omit<Item, 'id' | 'user_id'>) {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('itens').insert({ ...input, user_id }).select().single()
+export async function createItem(workspaceId: string, input: Omit<Item, 'id' | 'workspace_id'>) {
+  const { data, error } = await supabase
+    .from('itens')
+    .insert({ ...input, workspace_id: workspaceId })
+    .select()
+    .single()
   if (error) throw error
   return data as Item
 }
 
 // Descrições
-export async function getDescricoes() {
-  const { data, error } = await supabase.from('descricoes').select('*').order('descricao')
+export async function getDescricoes(workspaceId: string) {
+  const { data, error } = await supabase
+    .from('descricoes')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('descricao')
   if (error) throw error
   return data as Descricao[]
 }
-export async function createDescricao(input: Omit<Descricao, 'id' | 'user_id'>) {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('descricoes').insert({ ...input, user_id }).select().single()
+export async function createDescricao(
+  workspaceId: string,
+  input: Omit<Descricao, 'id' | 'workspace_id'>
+) {
+  const { data, error } = await supabase
+    .from('descricoes')
+    .insert({ ...input, workspace_id: workspaceId })
+    .select()
+    .single()
   if (error) throw error
   return data as Descricao
 }
 
 // Malotes
-export async function getMalotes() {
-  const { data, error } = await supabase.from('malotes').select('*').order('data')
+export async function getMalotes(workspaceId: string) {
+  const { data, error } = await supabase
+    .from('malotes')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('data')
   if (error) throw error
   return data as Malote[]
 }
-export async function createMalote(input: Omit<Malote, 'id' | 'user_id'>) {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('malotes').insert({ ...input, user_id }).select().single()
+export async function createMalote(workspaceId: string, input: Omit<Malote, 'id' | 'workspace_id'>) {
+  const { data, error } = await supabase
+    .from('malotes')
+    .insert({ ...input, workspace_id: workspaceId })
+    .select()
+    .single()
   if (error) throw error
   return data as Malote
 }
 
 // Lançamentos
-export async function getLancamentos() {
-  const { data, error } = await supabase.from('lancamentos').select('*').order('data')
+export async function getLancamentos(workspaceId: string) {
+  const { data, error } = await supabase
+    .from('lancamentos')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('data')
   if (error) throw error
   return data as Lancamento[]
 }
-export async function createLancamento(input: Omit<Lancamento, 'id' | 'user_id' | 'numero'>) {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('lancamentos').insert({ ...input, user_id }).select().single()
+export async function createLancamento(
+  workspaceId: string,
+  input: Omit<Lancamento, 'id' | 'workspace_id' | 'numero'>
+) {
+  const { data, error } = await supabase
+    .from('lancamentos')
+    .insert({ ...input, workspace_id: workspaceId })
+    .select()
+    .single()
   if (error) throw error
   return data as Lancamento
 }
@@ -85,23 +123,35 @@ export async function deleteLancamento(id: string) {
 }
 
 // Configurações
-export async function getConfiguracoes() {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('configuracoes').select('*').eq('user_id', user_id).single()
+export async function getConfiguracoes(workspaceId: string) {
+  const { data, error } = await supabase
+    .from('configuracoes')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .single()
   if (error) throw error
   return data as Configuracoes
 }
-export async function updateConfiguracoes(patch: Partial<Configuracoes>) {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('configuracoes').update(patch).eq('user_id', user_id).select().single()
+export async function updateConfiguracoes(workspaceId: string, patch: Partial<Configuracoes>) {
+  const { data, error } = await supabase
+    .from('configuracoes')
+    .update(patch)
+    .eq('workspace_id', workspaceId)
+    .select()
+    .single()
   if (error) throw error
   return data as Configuracoes
 }
 
-// Permissões
-export async function getMyRole(): Promise<Role> {
-  const user_id = await currentUserId()
-  const { data, error } = await supabase.from('user_roles').select('role').eq('user_id', user_id).single()
+// Permissões (por organização, via membros)
+export async function getMyRole(organizacaoId: string): Promise<Role> {
+  const { data: userData } = await supabase.auth.getUser()
+  const { data, error } = await supabase
+    .from('membros')
+    .select('role')
+    .eq('organizacao_id', organizacaoId)
+    .eq('user_id', userData.user?.id)
+    .single()
   if (error) throw error
   return data.role as Role
 }

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutGrid, FolderCog, LogOut } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import { useWorkspace } from '@/lib/WorkspaceContext'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Razonete', icon: LayoutGrid },
@@ -13,6 +14,14 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const {
+    organizacoes,
+    workspaces,
+    organizacaoAtiva,
+    workspaceAtivo,
+    setOrganizacaoAtiva,
+    setWorkspaceAtivo,
+  } = useWorkspace()
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -22,9 +31,44 @@ export function Sidebar() {
 
   return (
     <aside className="w-56 shrink-0 h-screen bg-panel border-r border-border flex flex-col">
-      <div className="px-4 py-4 border-b border-border-soft">
+      <div className="px-4 py-4 border-b border-border-soft flex flex-col gap-2">
         <span className="text-sm font-semibold text-text">Razonete Web</span>
+
+        {organizacoes.length > 1 && (
+          <select
+            value={organizacaoAtiva?.id ?? ''}
+            onChange={(e) => {
+              const org = organizacoes.find((o) => o.id === e.target.value)
+              if (org) setOrganizacaoAtiva(org)
+            }}
+            className="bg-panel-raised border border-border rounded text-xs text-text px-2 py-1"
+          >
+            {organizacoes.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.nome}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {workspaces.length > 0 && (
+          <select
+            value={workspaceAtivo?.id ?? ''}
+            onChange={(e) => {
+              const ws = workspaces.find((w) => w.id === e.target.value)
+              if (ws) setWorkspaceAtivo(ws)
+            }}
+            className="bg-panel-raised border border-border rounded text-xs text-text px-2 py-1"
+          >
+            {workspaces.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.nome}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
+
       <nav className="flex-1 flex flex-col gap-1 p-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname?.startsWith(href)
