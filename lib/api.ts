@@ -144,14 +144,36 @@ export async function updateConfiguracoes(workspaceId: string, patch: Partial<Co
 }
 
 // Permissões (por organização, via membros)
-export async function getMyRole(organizacaoId: string): Promise<Role> {
+export async function getMyRole(organizacaoId: string): Promise<Role | null> {
   const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user?.id) return null
   const { data, error } = await supabase
     .from('membros')
     .select('role')
     .eq('organizacao_id', organizacaoId)
-    .eq('user_id', userData.user?.id)
-    .single()
+    .eq('user_id', userData.user.id)
+    .maybeSingle()
   if (error) throw error
-  return data.role as Role
+  return (data?.role as Role) ?? null
+}
+
+// Todas as permissões do usuário (todas as organizações em que é membro)
+export interface MinhaPermissao {
+  organizacao_id: string
+  organizacao_nome: string
+  role: Role
+}
+export async function getMinhasPermissoes(): Promise<MinhaPermissao[]> {
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user?.id) return []
+  const { data, error } = await supabase
+    .from('membros')
+    .select('organizacao_id, role, organizacoes(nome)')
+    .eq('user_id', userData.user.id)
+  if (error) throw error
+  return (data ?? []).map((m: any) => ({
+    organizacao_id: m.organizacao_id,
+    organizacao_nome: m.organizacoes?.nome ?? m.organizacao_id,
+    role: m.role as Role,
+  }))
 }

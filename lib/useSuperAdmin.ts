@@ -9,8 +9,11 @@ export function useSuperAdmin() {
 
   useEffect(() => {
     async function check() {
-      const { data } = await supabase.rpc('is_super_admin')
-      setIsSuperAdmin(Boolean(data))
+      const { data, error } = await supabase.rpc('is_super_admin')
+      if (error) {
+        console.error('Falha ao verificar super admin:', error.message)
+      }
+      setIsSuperAdmin(!error && Boolean(data))
       setLoading(false)
     }
     check()

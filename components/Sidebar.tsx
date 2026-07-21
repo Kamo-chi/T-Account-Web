@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutGrid, FolderCog, LogOut, ShieldCheck } from 'lucide-react'
+import { LayoutGrid, FolderCog, LogOut, ShieldCheck, UserCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useWorkspace } from '@/lib/WorkspaceContext'
 import { useSuperAdmin } from '@/lib/useSuperAdmin'
@@ -131,7 +131,16 @@ export function Sidebar() {
           </Link>
         )}
       </nav>
-      <div className="p-2 border-t border-border-soft">
+      <div className="p-2 border-t border-border-soft flex flex-col gap-1">
+        <Link
+          href="/perfil"
+          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname?.startsWith('/perfil') ? 'bg-accent-soft text-accent' : 'text-text hover:bg-panel-raised'
+          }`}
+        >
+          <UserCircle size={15} />
+          Perfil
+        </Link>
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-text-dim hover:bg-panel-raised hover:text-text w-full"

@@ -17,7 +17,7 @@ export function useRole() {
     }
     setLoading(true)
     getMyRole(organizacaoAtiva.id)
-      .then(setRole)
+      .then((r) => setRole(r))
       .catch(() => setRole(null))
       .finally(() => setLoading(false))
   }, [organizacaoAtiva])
