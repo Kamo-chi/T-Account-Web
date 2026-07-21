@@ -10,7 +10,8 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession()
 
   const isAuthRoute = req.nextUrl.pathname.startsWith('/login')
-  const isProtectedRoute = req.nextUrl.pathname.startsWith('/dashboard')
+  const isProtectedRoute =
+    req.nextUrl.pathname.startsWith('/dashboard') || req.nextUrl.pathname.startsWith('/cadastros')
 
   if (!session && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', req.url))
@@ -24,5 +25,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/cadastros/:path*', '/login'],
 }

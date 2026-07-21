@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Button } from './Button'
 import { Input } from './Input'
+import { CurrencyInput } from './CurrencyInput'
 import { Grupo, Item, Descricao, Malote } from '@/lib/types'
 import { createLancamento } from '@/lib/api'
 
@@ -23,7 +24,7 @@ export function NewLancamentoDialog({ grupos, itens, descricoes, malotes, onClos
   const [itemId, setItemId] = useState('')
   const [descricaoId, setDescricaoId] = useState('')
   const [maloteId, setMaloteId] = useState('')
-  const [valor, setValor] = useState('')
+  const [valor, setValor] = useState<number | ''>('')
   const [observacao, setObservacao] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -122,7 +123,7 @@ export function NewLancamentoDialog({ grupos, itens, descricoes, malotes, onClos
             </select>
           )}
 
-          <Input mono type="number" placeholder="Valor" value={valor} onChange={(e) => setValor(e.target.value)} />
+          <CurrencyInput value={valor} onChange={setValor} />
           <Input placeholder="Observação (opcional)" value={observacao} onChange={(e) => setObservacao(e.target.value)} />
 
           {error && <span className="text-xs text-danger">{error}</span>}
