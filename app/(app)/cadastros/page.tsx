@@ -5,8 +5,10 @@ import { getGrupos, createGrupo, getItens, createItem, getDescricoes, createDesc
 import { Grupo, Item, Descricao, TipoGrupo } from '@/lib/types'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
+import { useWorkspace } from '@/lib/WorkspaceContext'
 
 export default function CadastrosPage() {
+  const { workspaceAtivo, loading: workspaceLoading } = useWorkspace()
   const [grupos, setGrupos] = useState<Grupo[]>([])
   const [itens, setItens] = useState<Item[]>([])
   const [descricoes, setDescricoes] = useState<Descricao[]>([])
@@ -16,20 +18,20 @@ export default function CadastrosPage() {
   const [novoItem, setNovoItem] = useState('')
   const [novaDescricao, setNovaDescricao] = useState('')
 
-  async function loadAll() {
-    setGrupos(await getGrupos())
-    setItens(await getItens())
-    setDescricoes(await getDescricoes())
+  async function loadAll(workspaceId: string) {
+    setGrupos(await getGrupos(workspaceId))
+    setItens(await getItens(workspaceId))
+    setDescricoes(await getDescricoes(workspaceId))
   }
 
   useEffect(() => {
-    loadAll()
-  }, [])
+    if (workspaceAtivo) loadAll(workspaceAtivo.id)
+  }, [workspaceAtivo])
 
   async function handleAddGrupo(e: React.FormEvent) {
     e.preventDefault()
-    if (!novoGrupo.trim()) return
-    await createGrupo({
+    if (!novoGrupo.trim() || !workspaceAtivo) return
+    await createGrupo(workspaceAtivo.id, {
       nome: novoGrupo,
       ordem: grupos.length,
       ativo: true,
@@ -38,23 +40,31 @@ export default function CadastrosPage() {
       calcular_no_saldo: true,
     })
     setNovoGrupo('')
-    loadAll()
+    loadAll(workspaceAtivo.id)
   }
 
   async function handleAddItem(e: React.FormEvent) {
     e.preventDefault()
-    if (!novoItem.trim()) return
-    await createItem({ nome: novoItem, cnpj: null, ativo: true })
+    if (!novoItem.trim() || !workspaceAtivo) return
+    await createItem(workspaceAtivo.id, { nome: novoItem, cnpj: null, ativo: true })
     setNovoItem('')
-    loadAll()
+    loadAll(workspaceAtivo.id)
   }
 
   async function handleAddDescricao(e: React.FormEvent) {
     e.preventDefault()
-    if (!novaDescricao.trim()) return
-    await createDescricao({ descricao: novaDescricao, ativo: true })
+    if (!novaDescricao.trim() || !workspaceAtivo) return
+    await createDescricao(workspaceAtivo.id, { descricao: novaDescricao, ativo: true })
     setNovaDescricao('')
-    loadAll()
+    loadAll(workspaceAtivo.id)
+  }
+
+  if (workspaceLoading) {
+    return <div className="p-4 text-xs text-text-faint">Carregando workspace…</div>
+  }
+
+  if (!workspaceAtivo) {
+    return <div className="p-4 text-xs text-text-faint">Nenhum workspace disponível.</div>
   }
 
   return (

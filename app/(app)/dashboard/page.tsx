@@ -6,8 +6,10 @@ import { montarRazonete, BlocoGrupo } from '@/lib/razoneteEngine'
 import { Grupo, Item, Descricao, Malote } from '@/lib/types'
 import { Button } from '@/components/Button'
 import { NewLancamentoDialog } from '@/components/NewLancamentoDialog'
+import { useWorkspace } from '@/lib/WorkspaceContext'
 
 export default function DashboardPage() {
+  const { workspaceAtivo, loading: workspaceLoading } = useWorkspace()
   const [blocos, setBlocos] = useState<BlocoGrupo[]>([])
   const [grupos, setGrupos] = useState<Grupo[]>([])
   const [itens, setItens] = useState<Item[]>([])
@@ -16,14 +18,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  async function load() {
+  async function load(workspaceId: string) {
     setLoading(true)
     const [g, lancamentos, m, i, d] = await Promise.all([
-      getGrupos(),
-      getLancamentos(),
-      getMalotes(),
-      getItens(),
-      getDescricoes(),
+      getGrupos(workspaceId),
+      getLancamentos(workspaceId),
+      getMalotes(workspaceId),
+      getItens(workspaceId),
+      getDescricoes(workspaceId),
     ])
     setGrupos(g)
     setItens(i)
@@ -34,8 +36,16 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    load()
-  }, [])
+    if (workspaceAtivo) load(workspaceAtivo.id)
+  }, [workspaceAtivo])
+
+  if (workspaceLoading) {
+    return <div className="p-4 text-xs text-text-faint">Carregando workspace…</div>
+  }
+
+  if (!workspaceAtivo) {
+    return <div className="p-4 text-xs text-text-faint">Nenhum workspace disponível.</div>
+  }
 
   return (
     <div className="h-full flex flex-col bg-bg">
@@ -74,12 +84,13 @@ export default function DashboardPage() {
       </main>
       {dialogOpen && (
         <NewLancamentoDialog
+          workspaceId={workspaceAtivo.id}
           grupos={grupos}
           itens={itens}
           descricoes={descricoes}
           malotes={malotes}
           onClose={() => setDialogOpen(false)}
-          onCreated={load}
+          onCreated={() => load(workspaceAtivo.id)}
         />
       )}
     </div>

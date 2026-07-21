@@ -9,6 +9,7 @@ import { Grupo, Item, Descricao, Malote } from '@/lib/types'
 import { createLancamento } from '@/lib/api'
 
 interface NewLancamentoDialogProps {
+  workspaceId: string
   grupos: Grupo[]
   itens: Item[]
   descricoes: Descricao[]
@@ -17,7 +18,7 @@ interface NewLancamentoDialogProps {
   onCreated: () => void
 }
 
-export function NewLancamentoDialog({ grupos, itens, descricoes, malotes, onClose, onCreated }: NewLancamentoDialogProps) {
+export function NewLancamentoDialog({ workspaceId, grupos, itens, descricoes, malotes, onClose, onCreated }: NewLancamentoDialogProps) {
   const [data, setData] = useState(new Date().toISOString().slice(0, 10))
   const [documento, setDocumento] = useState('')
   const [grupoId, setGrupoId] = useState('')
@@ -42,7 +43,7 @@ export function NewLancamentoDialog({ grupos, itens, descricoes, malotes, onClos
 
     setSaving(true)
     try {
-      await createLancamento({
+      await createLancamento(workspaceId, {
         data,
         documento,
         grupo_id: grupoId,
