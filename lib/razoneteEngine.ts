@@ -13,7 +13,7 @@ export interface LinhaDetalhe {
   valor: number;
   observacao?: string;
   /** id do malote pai — presente apenas em linhas "malote-item". */
-  maloteId?: string;
+  malote_id?: string;
 }
 
 export interface BlocoGrupo {
@@ -55,7 +55,7 @@ export function montarRazonete(
 
     // Lançamentos sem malote, pertencentes a este grupo
     const soltos = lancamentos.filter(
-      (l) => l.grupoId === grupo.id && !l.maloteId
+      (l) => l.grupo_id === grupo.id && !l.malote_id
     );
     for (const l of soltos) {
       gruposDeLinha.push({
@@ -66,9 +66,9 @@ export function montarRazonete(
             tipo: "lancamento",
             data: l.data,
             competencia: l.competencia || l.data.slice(0, 7),
-            item: itemMap.get(l.itemId) ?? "—",
+            item: itemMap.get(l.item_id) ?? "—",
             documento: l.documento,
-            descricao: descricaoMap.get(l.descricaoId) ?? "—",
+            descricao: descricaoMap.get(l.descricao_id) ?? "—",
             valor: l.valor,
             observacao: l.observacao,
           },
@@ -77,27 +77,27 @@ export function montarRazonete(
     }
 
     // Malotes deste grupo: linha consolidada + subitens agrupados
-    const malotesDoGrupo = malotes.filter((m) => m.grupoId === grupo.id);
+    const malotesDoGrupo = malotes.filter((m) => m.grupo_id === grupo.id);
     for (const m of malotesDoGrupo) {
       const maloteLine: LinhaDetalhe = {
         refId: m.id,
         tipo: "malote",
         data: m.data,
         descricao: m.descricao,
-        valor: m.valorTotal,
+        valor: m.valor_total,
       };
 
       const subitens = lancamentos
-        .filter((l) => l.maloteId === m.id)
+        .filter((l) => l.malote_id === m.id)
         .sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0))
         .map<LinhaDetalhe>((l) => ({
           refId: l.id,
           tipo: "malote-item",
           data: l.data,
           competencia: l.competencia || l.data.slice(0, 7),
-          item: itemMap.get(l.itemId) ?? "—",
+          item: itemMap.get(l.item_id) ?? "—",
           documento: l.documento,
-          descricao: descricaoMap.get(l.descricaoId) ?? "—",
+          descricao: descricaoMap.get(l.descricao_id) ?? "—",
           valor: l.valor,
           observacao: l.observacao,
           maloteId: m.id,
@@ -130,7 +130,7 @@ export function calcularTotalMalote(
   lancamentos: Lancamento[]
 ): number {
   return lancamentos
-    .filter((l) => l.maloteId === maloteId)
+    .filter((l) => l.malote_id === maloteId)
     .reduce((acc, l) => acc + l.valor, 0);
 }
 
@@ -145,11 +145,11 @@ export function saldoDoMes(
   mesIso: string
 ): number {
   const tipoPorGrupo = new Map(grupos.map((g) => [g.id, g.tipo]));
-  const contaPorGrupo = new Map(grupos.map((g) => [g.id, g.calcularNoSaldo !== false]));
+  const contaPorGrupo = new Map(grupos.map((g) => [g.id, g.calcular_no_saldo !== false]));
   return lancamentos
-    .filter((l) => l.data.startsWith(mesIso) && contaPorGrupo.get(l.grupoId))
+    .filter((l) => l.data.startsWith(mesIso) && contaPorGrupo.get(l.grupo_id))
     .reduce((acc, l) => {
-      const tipo = tipoPorGrupo.get(l.grupoId);
+      const tipo = tipoPorGrupo.get(l.grupo_id);
       if (tipo === "entrada") return acc + l.valor;
       if (tipo === "despesa") return acc - l.valor;
       return acc;
@@ -167,7 +167,7 @@ export function totalPorTipo(
   tipo: "entrada" | "despesa"
 ): number {
   return blocos
-    .filter((b) => b.grupo.tipo === tipo && b.grupo.calcularNoSaldo !== false)
+    .filter((b) => b.grupo.tipo === tipo && b.grupo.calcular_no_saldo !== false)
     .reduce((acc, b) => acc + b.total, 0);
 }
 
@@ -191,7 +191,7 @@ export function saldoAcumuladoAte(
   return lancamentos
     .filter((l) => l.data < dataCorteIsoExclusive)
     .reduce((acc, l) => {
-      const tipo = tipoPorGrupo.get(l.grupoId);
+      const tipo = tipoPorGrupo.get(l.grupo_id);
       if (tipo === "entrada") return acc + l.valor;
       if (tipo === "despesa") return acc - l.valor;
       return acc;
