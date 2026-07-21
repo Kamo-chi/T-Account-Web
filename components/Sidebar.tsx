@@ -1,14 +1,23 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutGrid, FolderCog, LogOut } from 'lucide-react'
+import { LayoutGrid, FolderCog, LogOut, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useWorkspace } from '@/lib/WorkspaceContext'
+import { useSuperAdmin } from '@/lib/useSuperAdmin'
 
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Razonete', icon: LayoutGrid },
-  { href: '/cadastros', label: 'Cadastros', icon: FolderCog },
+interface NavItem {
+  href: string
+  label: string
+  icon: typeof LayoutGrid
+  modulo: 'razonete' | 'pdf_organizer'
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/dashboard', label: 'Razonete', icon: LayoutGrid, modulo: 'razonete' },
+  { href: '/cadastros', label: 'Cadastros', icon: FolderCog, modulo: 'razonete' },
 ]
 
 export function Sidebar() {
@@ -22,6 +31,28 @@ export function Sidebar() {
     setOrganizacaoAtiva,
     setWorkspaceAtivo,
   } = useWorkspace()
+  const { isSuperAdmin } = useSuperAdmin()
+
+  const [modulosHabilitados, setModulosHabilitados] = useState<Set<string>>(new Set(['razonete']))
+
+  useEffect(() => {
+    async function loadModulos() {
+      if (!organizacaoAtiva) return
+      const { data } = await supabase
+        .from('organizacao_modulos')
+        .select('modulo, habilitado')
+        .eq('organizacao_id', organizacaoAtiva.id)
+      const habilitados = new Set(
+        (data ?? []).filter((m) => m.habilitado).map((m) => m.modulo as string)
+      )
+      // razonete sempre disponível por padrão se não houver registro explícito
+      if (!data || data.length === 0) habilitados.add('razonete')
+      setModulosHabilitados(habilitados)
+    }
+    loadModulos()
+  }, [organizacaoAtiva])
+
+  const navFiltrado = NAV_ITEMS.filter((item) => modulosHabilitados.has(item.modulo))
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -70,7 +101,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 flex flex-col gap-1 p-2">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {navFiltrado.map(({ href, label, icon: Icon }) => {
           const active = pathname?.startsWith(href)
           return (
             <Link
@@ -85,6 +116,20 @@ export function Sidebar() {
             </Link>
           )
         })}
+
+        {isSuperAdmin && (
+          <Link
+            href="/super-admin/organizacoes"
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors mt-2 border-t border-border-soft pt-3 ${
+              pathname?.startsWith('/super-admin')
+                ? 'bg-accent-soft text-accent'
+                : 'text-text hover:bg-panel-raised'
+            }`}
+          >
+            <ShieldCheck size={15} />
+            Super Admin
+          </Link>
+        )}
       </nav>
       <div className="p-2 border-t border-border-soft">
         <button

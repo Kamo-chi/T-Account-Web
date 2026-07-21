@@ -11,7 +11,9 @@ export async function middleware(req: NextRequest) {
 
   const isAuthRoute = req.nextUrl.pathname.startsWith('/login')
   const isProtectedRoute =
-    req.nextUrl.pathname.startsWith('/dashboard') || req.nextUrl.pathname.startsWith('/cadastros')
+    req.nextUrl.pathname.startsWith('/dashboard') ||
+    req.nextUrl.pathname.startsWith('/cadastros') ||
+    req.nextUrl.pathname.startsWith('/super-admin')
 
   if (!session && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', req.url))
@@ -25,5 +27,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/cadastros/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/cadastros/:path*', '/super-admin/:path*', '/login'],
 }
