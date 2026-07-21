@@ -8,10 +8,12 @@ export function useSuperAdmin() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .rpc('is_super_admin')
-      .then(({ data }) => setIsSuperAdmin(Boolean(data)))
-      .finally(() => setLoading(false))
+    async function check() {
+      const { data } = await supabase.rpc('is_super_admin')
+      setIsSuperAdmin(Boolean(data))
+      setLoading(false)
+    }
+    check()
   }, [])
 
   return { isSuperAdmin, loading }
